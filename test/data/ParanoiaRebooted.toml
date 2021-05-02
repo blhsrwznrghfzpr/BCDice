@@ -90,6 +90,7 @@ rands = [
 game_system = "ParanoiaRebooted"
 input = "MP2"
 output = "(MP2) ＞ [1, 1, 1] ＞ 失敗(3)"
+failure = true
 rands = [
   { sides = 6, value = 1 },
   { sides = 6, value = 1 },
@@ -100,6 +101,7 @@ rands = [
 game_system = "ParanoiaRebooted"
 input = "MP2"
 output = "(MP2) ＞ [2, 6, 4] ＞ 成功"
+success = true
 rands = [
   { sides = 6, value = 2 },
   { sides = 6, value = 6 },
@@ -110,6 +112,7 @@ rands = [
 game_system = "ParanoiaRebooted"
 input = "MP2"
 output = "(MP2) ＞ [2, 1, C] ＞ 失敗(1)(Computer)"
+failure = true
 rands = [
   { sides = 6, value = 2 },
   { sides = 6, value = 1 },
@@ -120,6 +123,7 @@ rands = [
 game_system = "ParanoiaRebooted"
 input = "MP2"
 output = "(MP2) ＞ [2, 6, C] ＞ 成功(Computer)"
+success = true
 rands = [
   { sides = 6, value = 2 },
   { sides = 6, value = 6 },
