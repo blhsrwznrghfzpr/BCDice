@@ -47,7 +47,7 @@ module BCDice
         ・改良種表　　　　　　IS
       MESSAGETEXT
 
-      register_prefix('\d+VBS(>=\d+)?', '\d+VF', '\d+VM', '\d+VG', 'PJ[VA]?', 'PQ[VA]?', 'AC', 'MM([IAD]|V[VA]?)', 'F[LRWGBCS]', 'IP[VA]?', 'EP[VA]?', 'MP', 'IS')
+      register_prefix('\d+VBS', '\d+VF', '\d+VM', '\d+VG', 'PJ[VA]?', 'PQ[VA]?', 'AC', 'MM([IAD]|V[VA]?)', 'F[LRWGBCS]', 'IP[VA]?', 'EP[VA]?', 'MP', 'IS')
 
       def initialize(command)
         super(command)
@@ -107,16 +107,20 @@ module BCDice
       end
 
       def resolute_action(command)
-        match_data = command.match(/(\d+)VBS(>=(\d+))?/)
+        match_data = command.match(/^(\d+)VBS(>=(\d+))?$/)
+        return nil unless match_data
 
         num_dices = match_data[1].to_i
         achievement, output = derive_achievement(num_dices, command)
         return output unless match_data[2]
 
         difficulty = match_data[3].to_i
-        output += achievement >= difficulty ? SUCCESS_STR : FAILURE_STR
 
-        return output
+        if achievement >= difficulty
+          Result.success(output + SUCCESS_STR)
+        else
+          Result.failure(output + FAILURE_STR)
+        end
       end
 
       SKILL_CHART = ['左に3マス、上に3マス動かす', '左に2マス、上に2マス動かす', '右か下に1マス動かしてもよい', '右に1マス、下に1マス動かす', '好きな方向に最大で3マス動かしてもよい（1マスでも良い）', '好きな方向に最大で5マス動かしてもよい（1〜3マスでもよい）'].freeze
@@ -151,26 +155,36 @@ module BCDice
         is_successful = largest_roll >= least_success_roll
 
         output = "(#{command}) ＞ [#{dice_str}]"
-        output += is_successful ? SUCCESS_STR : FAILURE_STR
 
-        return output, is_successful
+        if is_successful
+          Result.success(output + SUCCESS_STR)
+        else
+          Result.failure(output + FAILURE_STR)
+        end
       end
 
       LEAST_MINING_SUCCESS_ROLL = 5
       LEAST_GEM_SUCCESS_ROLL = 6
 
       def resolute_mining_action(command)
-        num_dices = command.match(/(\d+)VM/)[1].to_i
-        output, is_successful = resolute_difficult_action(num_dices, LEAST_MINING_SUCCESS_ROLL, command)
-        return output unless is_successful
+        m = command.match(/^(\d+)VM$/)
+        return nil unless m
+
+        num_dices = m[1].to_i
+        result = resolute_difficult_action(num_dices, LEAST_MINING_SUCCESS_ROLL, command)
+        return result unless result.success?
 
         roll_result = @randomizer.roll_once(D6)
-        "#{output} ＞ (1D6) ＞ [#{roll_result}] ＞ アイテムを#{roll_result}個獲得"
+        result.text += " ＞ (1D6) ＞ [#{roll_result}] ＞ アイテムを#{roll_result}個獲得"
+        result
       end
 
       def resolute_cutting_gem_action(command)
-        num_dices = command.match(/(\d+)VG/)[1].to_i
-        resolute_difficult_action(num_dices, LEAST_GEM_SUCCESS_ROLL, command)[0]
+        m = command.match(/^(\d+)VG$/)
+        return nil unless m
+
+        num_dices = m[1].to_i
+        resolute_difficult_action(num_dices, LEAST_GEM_SUCCESS_ROLL, command)
       end
 
       VILLACIEL_PREVIOUS_JOB_CHART = [['農家: 知力+1 器用さ+1 開拓／1Lv',
